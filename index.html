@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computer Graphics Algorithms Simulator</title>
+    <meta name="description" content="Interactive simulator for DDA, Bresenham Line, and Midpoint Circle drawing algorithms with step-by-step visualization.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="2" y1="12" x2="22" y2="12"/>
+                            <line x1="12" y1="2" x2="12" y2="22"/>
+                        </svg>
+                    </div>
+                    <h1>CG Algorithms Simulator</h1>
+                </div>
+                <p class="subtitle">Visualize DDA, Bresenham & Midpoint Circle Algorithms</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Control Panel -->
+            <aside class="control-panel">
+                <div class="panel-section">
+                    <h2 class="section-title">
+                        <span class="icon">⚙️</span>
+                        Algorithm Selection
+                    </h2>
+                    <div class="algorithm-tabs">
+                        <button class="tab-btn active" data-algorithm="dda">
+                            <span class="tab-icon">📐</span>
+                            DDA Line
+                        </button>
+                        <button class="tab-btn" data-algorithm="bresenham">
+                            <span class="tab-icon">📏</span>
+                            Bresenham Line
+                        </button>
+                        <button class="tab-btn" data-algorithm="circle">
+                            <span class="tab-icon">⭕</span>
+                            Midpoint Circle
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Input Forms -->
+                <div class="panel-section">
+                    <h2 class="section-title">
+                        <span class="icon">📝</span>
+                        Input Parameters
+                    </h2>
+                    
+                    <!-- Line Input (DDA & Bresenham) -->
+                    <form id="line-form" class="input-form">
+                        <div class="input-group">
+                            <label class="input-label">Start Point</label>
+                            <div class="coordinate-inputs">
+                                <div class="coord-input">
+                                    <span class="coord-label">X₁</span>
+                                    <input type="number" id="x1" value="2" required>
+                                </div>
+                                <div class="coord-input">
+                                    <span class="coord-label">Y₁</span>
+                                    <input type="number" id="y1" value="3" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">End Point</label>
+                            <div class="coordinate-inputs">
+                                <div class="coord-input">
+                                    <span class="coord-label">X₂</span>
+                                    <input type="number" id="x2" value="12" required>
+                                </div>
+                                <div class="coord-input">
+                                    <span class="coord-label">Y₂</span>
+                                    <input type="number" id="y2" value="8" required>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Circle Input -->
+                    <form id="circle-form" class="input-form hidden">
+                        <div class="input-group">
+                            <label class="input-label">Center Point</label>
+                            <div class="coordinate-inputs">
+                                <div class="coord-input">
+                                    <span class="coord-label">Cx</span>
+                                    <input type="number" id="cx" value="0" required>
+                                </div>
+                                <div class="coord-input">
+                                    <span class="coord-label">Cy</span>
+                                    <input type="number" id="cy" value="0" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Radius</label>
+                            <div class="radius-input">
+                                <span class="coord-label">R</span>
+                                <input type="number" id="radius" value="8" min="1" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Animation Controls -->
+                <div class="panel-section">
+                    <h2 class="section-title">
+                        <span class="icon">🎬</span>
+                        Animation
+                    </h2>
+                    <div class="speed-control">
+                        <label class="input-label">Speed</label>
+                        <input type="range" id="speed-slider" min="1" max="10" value="5">
+                        <div class="speed-labels">
+                            <span>Slow</span>
+                            <span>Fast</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button id="draw-btn" class="btn btn-primary">
+                        <span class="btn-icon">▶️</span>
+                        Draw
+                    </button>
+                    <button id="clear-btn" class="btn btn-secondary">
+                        <span class="btn-icon">🗑️</span>
+                        Clear
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Canvas Section -->
+            <section class="canvas-section">
+                <div class="canvas-header">
+                    <h2 id="canvas-title">DDA Line Drawing Algorithm</h2>
+                    <div class="canvas-info">
+                        <span class="info-badge" id="pixel-count">Pixels: 0</span>
+                    </div>
+                </div>
+                <div class="canvas-wrapper">
+                    <canvas id="graphics-canvas"></canvas>
+                    <div class="canvas-overlay" id="canvas-overlay">
+                        <div class="overlay-content">
+                            <span class="overlay-icon">🎨</span>
+                            <p>Enter coordinates and click Draw to visualize</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="canvas-legend">
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #6366f1;"></span>
+                        <span>Plotted Pixels</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: rgba(255,255,255,0.1);"></span>
+                        <span>Grid Lines</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Steps Panel -->
+            <aside class="steps-panel">
+                <div class="panel-section">
+                    <h2 class="section-title">
+                        <span class="icon">📊</span>
+                        Algorithm Steps
+                    </h2>
+                    <div class="algorithm-info" id="algorithm-info">
+                        <div class="info-card">
+                            <h3>DDA Algorithm</h3>
+                            <p>Digital Differential Analyzer uses floating-point arithmetic to calculate intermediate points of a line.</p>
+                            <div class="formula">
+                                <code>x<sub>i+1</sub> = x<sub>i</sub> + Δx/steps</code>
+                                <code>y<sub>i+1</sub> = y<sub>i</sub> + Δy/steps</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-section steps-table-section">
+                    <h2 class="section-title">
+                        <span class="icon">📋</span>
+                        Calculation Table
+                    </h2>
+                    <div class="table-wrapper">
+                        <table class="steps-table" id="steps-table">
+                            <thead>
+                                <tr id="table-header">
+                                    <th>Step</th>
+                                    <th>X</th>
+                                    <th>Y</th>
+                                    <th>Plot</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body">
+                                <tr class="empty-row">
+                                    <td colspan="4">No data yet. Click Draw to start.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Computer Graphics Algorithms Simulator • Built for Learning</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/algorithms/dda.js"></script>
+    <script src="js/algorithms/bresenham.js"></script>
+    <script src="js/algorithms/circle.js"></script>
+    <script src="js/canvas.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
