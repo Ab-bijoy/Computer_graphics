@@ -586,6 +586,64 @@ body::before {
     padding: 2rem 1rem;
 }
 
+/* ===== Algorithm Categories ===== */
+.algo-category {
+    margin-bottom: 0.75rem;
+}
+
+.algo-category:last-child {
+    margin-bottom: 0;
+}
+
+.category-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 0.4rem;
+    padding-left: 0.25rem;
+}
+
+/* ===== Polygon Textarea ===== */
+.poly-textarea {
+    width: 100%;
+    background: var(--bg-glass);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    color: var(--text-primary);
+    font-family: 'Fira Code', monospace;
+    font-size: 0.85rem;
+    padding: 0.75rem;
+    resize: vertical;
+    outline: none;
+    transition: var(--transition-normal);
+}
+
+.poly-textarea:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+/* ===== Scene Info ===== */
+.scene-info {
+    background: var(--bg-glass);
+    border-radius: var(--border-radius-sm);
+    padding: 0.75rem;
+}
+
+.info-text {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* ===== Control Panel Scroll ===== */
+.control-panel {
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+}
+
 /* ===== Footer ===== */
 .footer {
     background: var(--bg-glass);

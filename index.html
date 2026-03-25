@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Computer Graphics Algorithms Simulator</title>
-    <meta name="description" content="Interactive simulator for DDA, Bresenham Line, and Midpoint Circle drawing algorithms with step-by-step visualization.">
+    <meta name="description" content="Interactive simulator for line drawing, filling, clipping, and visibility algorithms with step-by-step visualization.">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -23,7 +23,7 @@
                     </div>
                     <h1>CG Algorithms Simulator</h1>
                 </div>
-                <p class="subtitle">Visualize DDA, Bresenham & Midpoint Circle Algorithms</p>
+                <p class="subtitle">Visualize Drawing, Filling, Clipping & Visibility Algorithms</p>
             </div>
         </header>
 
@@ -36,19 +36,73 @@
                         <span class="icon">⚙️</span>
                         Algorithm Selection
                     </h2>
-                    <div class="algorithm-tabs">
-                        <button class="tab-btn active" data-algorithm="dda">
-                            <span class="tab-icon">📐</span>
-                            DDA Line
-                        </button>
-                        <button class="tab-btn" data-algorithm="bresenham">
-                            <span class="tab-icon">📏</span>
-                            Bresenham Line
-                        </button>
-                        <button class="tab-btn" data-algorithm="circle">
-                            <span class="tab-icon">⭕</span>
-                            Midpoint Circle
-                        </button>
+
+                    <!-- Category: Drawing -->
+                    <div class="algo-category">
+                        <div class="category-label">📐 Drawing</div>
+                        <div class="algorithm-tabs">
+                            <button class="tab-btn active" data-algorithm="dda">
+                                <span class="tab-icon">📐</span>
+                                DDA Line
+                            </button>
+                            <button class="tab-btn" data-algorithm="bresenham">
+                                <span class="tab-icon">📏</span>
+                                Bresenham Line
+                            </button>
+                            <button class="tab-btn" data-algorithm="circle">
+                                <span class="tab-icon">⭕</span>
+                                Midpoint Circle
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Category: Filling -->
+                    <div class="algo-category">
+                        <div class="category-label">🎨 Filling</div>
+                        <div class="algorithm-tabs">
+                            <button class="tab-btn" data-algorithm="boundaryFill">
+                                <span class="tab-icon">🔲</span>
+                                Boundary Fill
+                            </button>
+                            <button class="tab-btn" data-algorithm="floodFill">
+                                <span class="tab-icon">🪣</span>
+                                Flood Fill
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Category: Clipping -->
+                    <div class="algo-category">
+                        <div class="category-label">✂️ Clipping</div>
+                        <div class="algorithm-tabs">
+                            <button class="tab-btn" data-algorithm="cohenSutherland">
+                                <span class="tab-icon">📎</span>
+                                Cohen–Sutherland
+                            </button>
+                            <button class="tab-btn" data-algorithm="sutherlandHodgman">
+                                <span class="tab-icon">🔷</span>
+                                Sutherland–Hodgman
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Category: Visibility -->
+                    <div class="algo-category">
+                        <div class="category-label">👁️ Visibility / 3D</div>
+                        <div class="algorithm-tabs">
+                            <button class="tab-btn" data-algorithm="backFace">
+                                <span class="tab-icon">🧊</span>
+                                Back Face Detection
+                            </button>
+                            <button class="tab-btn" data-algorithm="zbuffer">
+                                <span class="tab-icon">📊</span>
+                                Z-Buffer
+                            </button>
+                            <button class="tab-btn" data-algorithm="painters">
+                                <span class="tab-icon">🖌️</span>
+                                Painter's
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -109,6 +163,147 @@
                             <div class="radius-input">
                                 <span class="coord-label">R</span>
                                 <input type="number" id="radius" value="8" min="1" required>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Fill Input (Boundary & Flood) -->
+                    <form id="fill-form" class="input-form hidden">
+                        <div class="input-group">
+                            <label class="input-label">Seed Point</label>
+                            <div class="coordinate-inputs">
+                                <div class="coord-input">
+                                    <span class="coord-label">Sx</span>
+                                    <input type="number" id="seed-x" value="0" required>
+                                </div>
+                                <div class="coord-input">
+                                    <span class="coord-label">Sy</span>
+                                    <input type="number" id="seed-y" value="0" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Region Size</label>
+                            <div class="radius-input">
+                                <span class="coord-label">S</span>
+                                <input type="number" id="fill-size" value="6" min="2" max="10" required>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Clipping Input (Cohen-Sutherland) -->
+                    <form id="clip-line-form" class="input-form hidden">
+                        <div class="input-group">
+                            <label class="input-label">Line Start</label>
+                            <div class="coordinate-inputs">
+                                <div class="coord-input">
+                                    <span class="coord-label">X₁</span>
+                                    <input type="number" id="clip-x1" value="-8" required>
+                                </div>
+                                <div class="coord-input">
+                                    <span class="coord-label">Y₁</span>
+                                    <input type="number" id="clip-y1" value="-6" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Line End</label>
+                            <div class="coordinate-inputs">
+                                <div class="coord-input">
+                                    <span class="coord-label">X₂</span>
+                                    <input type="number" id="clip-x2" value="8" required>
+                                </div>
+                                <div class="coord-input">
+                                    <span class="coord-label">Y₂</span>
+                                    <input type="number" id="clip-y2" value="7" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Clip Window</label>
+                            <div class="coordinate-inputs">
+                                <div class="coord-input">
+                                    <span class="coord-label">Xmin</span>
+                                    <input type="number" id="clip-xmin" value="-5" required>
+                                </div>
+                                <div class="coord-input">
+                                    <span class="coord-label">Ymin</span>
+                                    <input type="number" id="clip-ymin" value="-5" required>
+                                </div>
+                            </div>
+                            <div class="coordinate-inputs" style="margin-top: 0.5rem;">
+                                <div class="coord-input">
+                                    <span class="coord-label">Xmax</span>
+                                    <input type="number" id="clip-xmax" value="5" required>
+                                </div>
+                                <div class="coord-input">
+                                    <span class="coord-label">Ymax</span>
+                                    <input type="number" id="clip-ymax" value="5" required>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Polygon Clipping Input (Sutherland-Hodgman) -->
+                    <form id="clip-poly-form" class="input-form hidden">
+                        <div class="input-group">
+                            <label class="input-label">Polygon Vertices (comma-separated x,y pairs)</label>
+                            <textarea id="poly-vertices" class="poly-textarea" rows="3" placeholder="-8,0  0,8  8,-3">-8,0  0,8  8,-3</textarea>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Clip Window</label>
+                            <div class="coordinate-inputs">
+                                <div class="coord-input">
+                                    <span class="coord-label">Xmin</span>
+                                    <input type="number" id="poly-xmin" value="-5" required>
+                                </div>
+                                <div class="coord-input">
+                                    <span class="coord-label">Ymin</span>
+                                    <input type="number" id="poly-ymin" value="-5" required>
+                                </div>
+                            </div>
+                            <div class="coordinate-inputs" style="margin-top: 0.5rem;">
+                                <div class="coord-input">
+                                    <span class="coord-label">Xmax</span>
+                                    <input type="number" id="poly-xmax" value="5" required>
+                                </div>
+                                <div class="coord-input">
+                                    <span class="coord-label">Ymax</span>
+                                    <input type="number" id="poly-ymax" value="5" required>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- 3D View Input (Back Face) -->
+                    <form id="view-form" class="input-form hidden">
+                        <div class="input-group">
+                            <label class="input-label">View Direction Vector</label>
+                            <div class="coordinate-inputs">
+                                <div class="coord-input">
+                                    <span class="coord-label">Vx</span>
+                                    <input type="number" id="view-x" value="0" step="0.1" required>
+                                </div>
+                                <div class="coord-input">
+                                    <span class="coord-label">Vy</span>
+                                    <input type="number" id="view-y" value="0" step="0.1" required>
+                                </div>
+                            </div>
+                            <div class="coordinate-inputs" style="margin-top: 0.5rem;">
+                                <div class="coord-input">
+                                    <span class="coord-label">Vz</span>
+                                    <input type="number" id="view-z" value="-1" step="0.1" required>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Scene selection (Z-Buffer / Painter's) -->
+                    <form id="scene-form" class="input-form hidden">
+                        <div class="input-group">
+                            <label class="input-label">3D Scene</label>
+                            <div class="scene-info">
+                                <p class="info-text">Overlapping triangles at different depths. The algorithm resolves which surface is visible at each pixel.</p>
                             </div>
                         </div>
                     </form>
@@ -226,6 +421,13 @@
     <script src="js/algorithms/dda.js"></script>
     <script src="js/algorithms/bresenham.js"></script>
     <script src="js/algorithms/circle.js"></script>
+    <script src="js/algorithms/boundary_fill.js"></script>
+    <script src="js/algorithms/flood_fill.js"></script>
+    <script src="js/algorithms/cohen_sutherland.js"></script>
+    <script src="js/algorithms/sutherland_hodgman.js"></script>
+    <script src="js/algorithms/back_face.js"></script>
+    <script src="js/algorithms/zbuffer.js"></script>
+    <script src="js/algorithms/painters.js"></script>
     <script src="js/canvas.js"></script>
     <script src="js/app.js"></script>
 </body>
