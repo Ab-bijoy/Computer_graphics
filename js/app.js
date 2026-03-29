@@ -25,7 +25,7 @@ class App {
             dda: 'DDA Line Drawing Algorithm',
             bresenham: "Bresenham's Line Drawing Algorithm",
             circle: 'Midpoint Circle Drawing Algorithm',
-            boundaryFill: 'Boundary Fill Algorithm',
+            boundaryFill: 'Boundary Fill Algorithm (Stack)',
             floodFill: 'Flood Fill Algorithm',
             cohenSutherland: 'Cohen–Sutherland Line Clipping',
             sutherlandHodgman: 'Sutherland–Hodgman Polygon Clipping',
@@ -208,6 +208,15 @@ class App {
                 result = algo.calculate(values.sceneId);
                 break;
         }
+
+        // --- NEW: ERROR HANDLING ---
+        // If the algorithm returns an error (like an out-of-bounds seed point)
+        if (result && result.error) {
+            alert(result.error);
+            this.clear(); 
+            return; 
+        }
+        // ---------------------------
 
         // Update pixel count
         document.getElementById('pixel-count').textContent = `Pixels: ${result.points.length}`;
