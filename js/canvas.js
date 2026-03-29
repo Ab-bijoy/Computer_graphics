@@ -1,6 +1,7 @@
 /**
  * Canvas Manager - Handles all canvas operations including
- * pixel plotting, line/polygon drawing, region fills, and multi-colour rendering.
+ * pixel plotting, line/polygon drawing, region fills, multi-colour rendering,
+ * and floating-point geometry for transformations.
  */
 
 class CanvasManager {
@@ -57,6 +58,7 @@ class CanvasManager {
         const h = this.canvas.height / (window.devicePixelRatio || 1);
         this.ctx.clearRect(0, 0, w, h);
 
+        // Draw minor grid lines
         this.ctx.strokeStyle = this.gridColor;
         this.ctx.lineWidth = 1;
         for (let x = this.originX % this.pixelSize; x < w; x += this.pixelSize) {
@@ -66,11 +68,13 @@ class CanvasManager {
             this.ctx.beginPath(); this.ctx.moveTo(0, y); this.ctx.lineTo(w, y); this.ctx.stroke();
         }
 
+        // Draw main axes (X and Y)
         this.ctx.strokeStyle = this.axisColor;
         this.ctx.lineWidth = 2;
         this.ctx.beginPath(); this.ctx.moveTo(0, this.originY); this.ctx.lineTo(w, this.originY); this.ctx.stroke();
         this.ctx.beginPath(); this.ctx.moveTo(this.originX, 0); this.ctx.lineTo(this.originX, h); this.ctx.stroke();
 
+        // Draw coordinate labels
         this.ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
         this.ctx.font = '11px Inter, sans-serif';
         this.ctx.textAlign = 'center';
@@ -112,7 +116,7 @@ class CanvasManager {
     }
 
     /**
-     * Draw a line on the canvas (screen coordinates, not grid)
+     * Draw a continuous line on the canvas
      */
     drawLine(x1, y1, x2, y2, color, lineWidth = 2) {
         const s1 = this.toScreen(x1, y1);
@@ -126,7 +130,7 @@ class CanvasManager {
     }
 
     /**
-     * Draw a rectangle outline (for clip windows)
+     * Draw a rectangle outline (used for clip windows)
      */
     drawRect(xMin, yMin, xMax, yMax, color, lineWidth = 2) {
         const s1 = this.toScreen(xMin, yMax); // top-left in screen coords
@@ -144,7 +148,7 @@ class CanvasManager {
     }
 
     /**
-     * Draw a polygon outline
+     * Draw a polygon outline (Supports floating point math for Transformations)
      */
     drawPolygon(vertices, color, lineWidth = 2, dash = false) {
         if (vertices.length < 2) return;
@@ -187,6 +191,9 @@ class CanvasManager {
         }
     }
 
+    /**
+     * Animate standard pixels
+     */
     async animatePixels(points, onStep, speed = 100) {
         this.animationSpeed = speed;
         this.isAnimating = true;
@@ -215,9 +222,18 @@ class CanvasManager {
         this.isAnimating = false;
     }
 
-    stopAnimation() { this.isAnimating = false; }
-    clear() { this.stopAnimation(); this.drawGrid(); }
-    setSpeed(value) { this.animationSpeed = 330 - (value * 30); }
+    stopAnimation() { 
+        this.isAnimating = false; 
+    }
+    
+    clear() { 
+        this.stopAnimation(); 
+        this.drawGrid(); 
+    }
+    
+    setSpeed(value) { 
+        this.animationSpeed = 330 - (value * 30); 
+    }
 }
 
 window.CanvasManager = CanvasManager;

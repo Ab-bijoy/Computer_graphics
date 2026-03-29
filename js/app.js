@@ -1,6 +1,6 @@
 /**
  * Main Application Controller
- * Manages 10 algorithms across Drawing, Filling, Clipping and Visibility categories.
+ * Manages algorithms across Drawing, Filling, Clipping, Visibility, and Transformations.
  */
 
 class App {
@@ -18,20 +18,22 @@ class App {
             sutherlandHodgman: SutherlandHodgmanAlgorithm,
             backFace: BackFaceAlgorithm,
             zbuffer: ZBufferAlgorithm,
-            painters: PaintersAlgorithm
+            painters: PaintersAlgorithm,
+            transform2d: Transform2DAlgorithm // NEW: Added Transformations
         };
 
         this.algorithmTitles = {
             dda: 'DDA Line Drawing Algorithm',
             bresenham: "Bresenham's Line Drawing Algorithm",
             circle: 'Midpoint Circle Drawing Algorithm',
-            boundaryFill: 'Boundary Fill Algorithm (Stack)',
-            floodFill: 'Flood Fill Algorithm',
+            boundaryFill: 'Boundary Fill Algorithm (DFS)',
+            floodFill: 'Flood Fill Algorithm (DFS)',
             cohenSutherland: 'Cohen–Sutherland Line Clipping',
             sutherlandHodgman: 'Sutherland–Hodgman Polygon Clipping',
             backFace: 'Back Face Detection Algorithm',
             zbuffer: 'Z-Buffer Algorithm',
-            painters: "Painter's Algorithm"
+            painters: "Painter's Algorithm",
+            transform2d: '2D Transformations' // NEW: Added Transformations
         };
 
         // Map algorithms to their input form IDs
@@ -45,7 +47,8 @@ class App {
             sutherlandHodgman: 'clip-poly-form',
             backFace: 'view-form',
             zbuffer: 'scene-form',
-            painters: 'scene-form'
+            painters: 'scene-form',
+            transform2d: 'transform-form' // NEW: Added Transformations
         };
 
         this.init();
@@ -72,6 +75,18 @@ class App {
         document.getElementById('speed-slider').addEventListener('input', (e) => {
             this.canvas.setSpeed(parseInt(e.target.value));
         });
+
+        // NEW: Transform Type Dropdown Logic
+        const transformTypeSelect = document.getElementById('transform-type');
+        if (transformTypeSelect) {
+            transformTypeSelect.addEventListener('change', (e) => {
+                // Hide all parameter divs
+                document.querySelectorAll('.transform-params').forEach(el => el.classList.add('hidden'));
+                // Show the specific one selected
+                const targetParam = document.getElementById(`param-${e.target.value}`);
+                if (targetParam) targetParam.classList.remove('hidden');
+            });
+        }
     }
 
     switchAlgorithm(algorithm) {
@@ -82,8 +97,8 @@ class App {
             btn.classList.toggle('active', btn.dataset.algorithm === algorithm);
         });
 
-        // Show the correct form, hide all others
-        const allForms = ['line-form', 'circle-form', 'fill-form', 'clip-line-form', 'clip-poly-form', 'view-form', 'scene-form'];
+        // Show the correct form, hide all others (Added 'transform-form')
+        const allForms = ['line-form', 'circle-form', 'fill-form', 'clip-line-form', 'clip-poly-form', 'view-form', 'scene-form', 'transform-form'];
         const activeForm = this.formMap[algorithm];
         allForms.forEach(id => {
             const el = document.getElementById(id);
@@ -167,6 +182,31 @@ class App {
                 vz: parseFloat(document.getElementById('view-z').value) || -1
             };
         }
+        // NEW: Transformations Data Capture
+        if (algo === 'transform2d') {
+            const text = document.getElementById('trans-vertices').value.trim();
+            const vertices = text.split(/\s+/).map(pair => {
+                const [x, y] = pair.split(',').map(Number);
+                return { x: x || 0, y: y || 0 };
+            });
+            const type = document.getElementById('transform-type').value;
+            
+            return {
+                vertices,
+                type,
+                params: {
+                    tx: parseFloat(document.getElementById('trans-tx').value) || 0,
+                    ty: parseFloat(document.getElementById('trans-ty').value) || 0,
+                    sx: parseFloat(document.getElementById('trans-sx').value) || 1,
+                    sy: parseFloat(document.getElementById('trans-sy').value) || 1,
+                    angle: parseFloat(document.getElementById('trans-angle').value) || 0,
+                    shx: parseFloat(document.getElementById('trans-shx').value) || 0,
+                    shy: parseFloat(document.getElementById('trans-shy').value) || 0,
+                    axis: document.getElementById('trans-reflect-axis').value
+                }
+            };
+        }
+        
         // zbuffer, painters
         return { sceneId: 0 };
     }
@@ -203,23 +243,25 @@ class App {
             case 'backFace':
                 result = algo.calculate(values.vx, values.vy, values.vz);
                 break;
+            case 'transform2d': // NEW
+                result = algo.calculate(values.vertices, values.type, values.params);
+                break;
             case 'zbuffer':
             case 'painters':
                 result = algo.calculate(values.sceneId);
                 break;
         }
 
-        // --- NEW: ERROR HANDLING ---
-        // If the algorithm returns an error (like an out-of-bounds seed point)
+        // Error Handling
         if (result && result.error) {
             alert(result.error);
             this.clear(); 
             return; 
         }
-        // ---------------------------
 
-        // Update pixel count
-        document.getElementById('pixel-count').textContent = `Pixels: ${result.points.length}`;
+        // Update pixel count (Safeguard for algorithms that don't return 'points' array like Transformations)
+        const pointCount = result.points ? result.points.length : 0;
+        document.getElementById('pixel-count').textContent = `Pixels/Vertices: ${pointCount > 0 ? pointCount : result.steps.length}`;
 
         // Populate table
         this.populateTable(result.steps, algo);
@@ -244,13 +286,11 @@ class App {
                 break;
 
             case 'boundaryFill':
-                // Draw boundary first
                 if (result.boundaryPoints) {
                     result.boundaryPoints.forEach(p => {
                         this.canvas.plotPixelColor(p.x, p.y, '#f59e0b', 'rgba(245,158,11,0.5)');
                     });
                 }
-                // Animate fill
                 await this.canvas.animatePixelsColored(result.points, (i) => this.highlightRow(i), () => ({
                     color: '#10b981',
                     glow: 'rgba(16,185,129,0.5)'
@@ -258,29 +298,30 @@ class App {
                 break;
 
             case 'floodFill':
-                // Draw original region outline faintly
-                if (result.regionPoints) {
-                    result.regionPoints.forEach(p => {
-                        this.canvas.plotPixelColor(p.x, p.y, 'rgba(255,255,255,0.08)', 'transparent');
+                if (result.boundaryPoints) {
+                    result.boundaryPoints.forEach(p => {
+                        this.canvas.plotPixelColor(p.x, p.y, p.color, 'rgba(255,255,255,0.2)');
                     });
                 }
-                // Animate fill
+                if (result.regionPoints) {
+                    result.regionPoints.forEach(p => {
+                        this.canvas.plotPixelColor(p.x, p.y, 'rgba(255,255,255,0.05)', 'transparent');
+                    });
+                }
+                const hexF = '#00f5ff'; 
                 await this.canvas.animatePixelsColored(result.points, (i) => this.highlightRow(i), () => ({
-                    color: '#6366f1',
-                    glow: 'rgba(99,102,241,0.5)'
+                    color: hexF,
+                    glow: `rgba(0,245,255,0.5)`
                 }));
                 break;
 
             case 'cohenSutherland':
-                // Draw clip window
                 this.canvas.drawRect(values.xMin, values.yMin, values.xMax, values.yMax, '#f59e0b', 2);
-                // Draw original line
                 this.canvas.drawLine(
                     result.originalLine.x1, result.originalLine.y1,
                     result.originalLine.x2, result.originalLine.y2,
                     'rgba(239, 68, 68, 0.5)', 2
                 );
-                // Draw clipped line
                 if (result.accept && result.clippedLine) {
                     this.canvas.drawLine(
                         result.clippedLine.x1, result.clippedLine.y1,
@@ -288,23 +329,18 @@ class App {
                         '#10b981', 3
                     );
                 }
-                // Animate window border pixels
-                await this.canvas.animatePixelsColored(result.points, (i) => this.highlightRow(Math.min(i, result.steps.length - 1)), (p) => ({
+                await this.canvas.animatePixelsColored(result.points, (i) => this.highlightRow(Math.min(i, result.steps.length - 1)), () => ({
                     color: '#f59e0b',
                     glow: 'rgba(245,158,11,0.3)'
                 }));
                 break;
 
             case 'sutherlandHodgman':
-                // Draw clip window
                 this.canvas.drawRect(values.xMin, values.yMin, values.xMax, values.yMax, '#f59e0b', 2);
-                // Draw original polygon
                 this.canvas.drawPolygon(result.originalPolygon, 'rgba(239, 68, 68, 0.5)', 2, true);
-                // Draw clipped polygon
                 if (result.clippedPolygon && result.clippedPolygon.length > 0) {
                     this.canvas.drawFilledPolygon(result.clippedPolygon, 'rgba(16, 185, 129, 0.25)', '#10b981');
                 }
-                // Animate window border pixels
                 await this.canvas.animatePixelsColored(result.points, (i) => this.highlightRow(Math.min(i, result.steps.length - 1)), () => ({
                     color: '#f59e0b',
                     glow: 'rgba(245,158,11,0.3)'
@@ -312,7 +348,6 @@ class App {
                 break;
 
             case 'backFace':
-                // Animate edge pixels with face colouring
                 await this.canvas.animatePixelsColored(result.points, (i) => this.highlightRow(Math.min(i, result.steps.length - 1)), (p) => {
                     const faceColors = {
                         'Front': { color: '#6366f1', glow: 'rgba(99,102,241,0.5)' },
@@ -324,6 +359,19 @@ class App {
                     };
                     return faceColors[p.face] || { color: '#6366f1', glow: 'rgba(99,102,241,0.5)' };
                 });
+                break;
+
+            // NEW: Render Transformations
+            case 'transform2d':
+                // Draw Original Polygon (Red, dashed outline)
+                this.canvas.drawPolygon(result.originalPolygon, 'rgba(239, 68, 68, 0.5)', 2, true);
+                
+                // Draw Transformed Polygon (Solid green with light fill)
+                this.canvas.drawFilledPolygon(result.transformedPolygon, 'rgba(16, 185, 129, 0.25)', '#10b981');
+                
+                // Highlight final step in table (Short delay for visual flow)
+                await new Promise(r => setTimeout(r, 100));
+                this.highlightRow(result.steps.length - 1);
                 break;
 
             case 'zbuffer':

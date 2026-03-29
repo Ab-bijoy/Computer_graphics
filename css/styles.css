@@ -744,3 +744,32 @@ body::before {
 ::-webkit-scrollbar-thumb:hover {
     background: var(--accent-secondary);
 }
+
+/* ===== Transform Select & Params ===== */
+.transform-select {
+    width: 100%;
+    background: var(--bg-glass);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-size: 0.95rem;
+    padding: 0.6rem 0.75rem;
+    outline: none;
+    cursor: pointer;
+    transition: var(--transition-normal);
+}
+
+.transform-select:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.transform-select option {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.transform-params.hidden {
+    display: none;
+}
